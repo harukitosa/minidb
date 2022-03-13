@@ -18,7 +18,9 @@ func (d *DiskManager) new(dataFile os.File) (*DiskManager, error) {
 	}
 	fileSize := fileStat.Size()
 	nextPageID := fileSize / int64(os.Getpagesize())
-	return &DiskManager{heapFile: &dataFile, nextPageID: uint64(nextPageID)}, nil
+	d.heapFile = &dataFile
+	d.nextPageID = uint64(nextPageID)
+	return d, nil
 }
 
 func (d *DiskManager) Open(dataFilePath string) (*DiskManager, error) {
@@ -29,14 +31,24 @@ func (d *DiskManager) Open(dataFilePath string) (*DiskManager, error) {
 	return d.new(*file)
 }
 
-func (d *DiskManager) AllocatePage(diskManager DiskManager) int64 {
-	return 0
+func (d *DiskManager) AllocatePage(diskManager DiskManager) PageID {
+	return PageID(d.nextPageID + 1)
 }
 
-func (d *DiskManager) ReadPageData(diskManager DiskManager, pageID PageID) ([]byte, error) {
-	return nil, nil
+func (d *DiskManager) ReadPageData(pageID PageID, data []byte) ([]byte, error) {
+	offset := os.Getpagesize() * int(pageID)
+	_, err := d.heapFile.ReadAt(data, int64(offset))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
-func (d *DiskManager) WritePageData(diskManager DiskManager, pageID PageID) ([]byte, error) {
-	return nil, nil
+func (d *DiskManager) WritePageData(pageID PageID, data []byte) ([]byte, error) {
+	offset := os.Getpagesize() * int(pageID)
+	_, err := d.heapFile.WriteAt(data, int64(offset))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
