@@ -31,7 +31,7 @@ func (d *DiskManager) Open(dataFilePath string) (*DiskManager, error) {
 	return d.new(*file)
 }
 
-func (d *DiskManager) AllocatePage(diskManager DiskManager) PageID {
+func (d *DiskManager) AllocatePage() PageID {
 	return PageID(d.nextPageID + 1)
 }
 
